@@ -37,7 +37,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     public void onDrawFrame(GL10 unused){
         float[] mModelMatrix=new float[16];
-        float[] mTempMatrix=new float[16];
+        float[] mTempMatrix;
+        float[] mMVPMatrix2=new float[16];
         Matrix.setIdentityM(mModelMatrix, 0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
@@ -46,17 +47,20 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         float angle=0.090f*((int) time);
         float distance=0.001f*((int)time);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix2, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
-
-            Matrix.translateM(mModelMatrix, 0, distance, distance/2, 0f);
+        Matrix.translateM(mModelMatrix, 0, distance, distance/2, 0f);
+        Matrix.translateM(mModelMatrix,0,-distance,distance,0f);
 
         Matrix.setRotateM(mRotationMatrix, 0, angle, 0, 0, -1.0f);
-       // Matrix.multiplyMM(mMVPMatrix,0,move,0,mViewMatrix,0);
         mTempMatrix=mModelMatrix.clone();
         Matrix.multiplyMM(mModelMatrix,0,mTempMatrix,0,mRotationMatrix,0);
         mTempMatrix=mMVPMatrix.clone();
         Matrix.multiplyMM(mMVPMatrix,0,mTempMatrix,0,mModelMatrix,0);
+        mTempMatrix=mMVPMatrix2.clone();
+        Matrix.multiplyMM(mMVPMatrix2,0,mTempMatrix,0,mModelMatrix,0);
         mSquare.draw(mMVPMatrix);
+        mSquare.draw(mMVPMatrix2);
     }
     public static int loadShader(int type,String shaderCode){
         int shader=GLES20.glCreateShader(type);
