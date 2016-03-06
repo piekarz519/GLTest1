@@ -21,7 +21,7 @@ public class Square {
     float _color[] = {1.0f, 1.0f, 1.0f, 0.0f };
 
     private int mMVPMatrixHandle;
-    // number of coordinates per vertex in this array
+
     static final int COORDS_PER_VERTEX = 3;
     static float squareCoords[] = {
             -0.1f,  0.1f, 0.0f,   // top left
@@ -79,11 +79,13 @@ public class Square {
     private final float[] mViewMatrix=new float[16];
     private float xMove=0.0f, yMove=0.0f;
 
-    public void setMovement(float x, float y){
-        xMove=x;
-        yMove=y;}
+    public void setMovement(float x, float y){xMove=x;yMove=y;}
     public void setColor(float[] color){_color=color;}
     public float[] getmProjectionMatrix(){return mProjectionMatrix;}
+
+    float _x=0.0f;
+    float _y=0.0f;
+    public void setPosition(float x, float y){_x=x;_y=y;}
 
     public float[] getmMVPMatrix()
     {
@@ -102,6 +104,7 @@ public class Square {
 
 
         Matrix.translateM(mModelMatrix, 0, distanceX, distanceY, 0f);
+        Matrix.translateM(mModelMatrix,0,_x,_y,0f);
         Matrix.setRotateM(mRotationMatrix, 0, angle, 0, 0, -1.0f);
 
         mTempMatrix=mModelMatrix.clone();
