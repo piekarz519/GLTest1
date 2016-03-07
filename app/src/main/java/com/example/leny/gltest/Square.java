@@ -2,6 +2,7 @@ package com.example.leny.gltest;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -17,10 +18,10 @@ public class Square {
     private ShortBuffer drawListBuffer;
     private final String vertexShaderCode="uniform mat4 uMVPMatrix;"+"attribute vec4 vPosition;" + "void main() {" + "  gl_Position = uMVPMatrix *vPosition;" + "}";
     private final String fragmentShaderCode = "precision mediump float;" + "uniform vec4 vColor;" + "void main() {" + "  gl_FragColor = vColor;" + "}";
-    float color[] = {1.0f, 1.0f, 1.0f, 0.0f };
+    float _color[] = {1.0f, 1.0f, 1.0f, 0.0f };
 
     private int mMVPMatrixHandle;
-    // number of coordinates per vertex in this array
+
     static final int COORDS_PER_VERTEX = 3;
     static float squareCoords[] = {
             -0.1f,  0.1f, 0.0f,   // top left
@@ -59,26 +60,58 @@ public class Square {
     private int mColorHandle;
     private final int vertexCount=squareCoords.length/COORDS_PER_VERTEX;
     private final  int vertexStride=COORDS_PER_VERTEX*4;
-    public void draw() {
-        GLES20.glUseProgram(mProgram);
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount);
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-    }
+
     public void draw(float[]mvpMatrix){
         GLES20.glUseProgram(mProgram);
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+        GLES20.glUniform4fv(mColorHandle, 1, _color, 0);
         mMVPMatrixHandle=GLES20.glGetUniformLocation(mProgram,"uMVPMatrix");
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle,1,false,mvpMatrix,0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount);
         GLES20.glDisableVertexAttribArray(mPositionHandle);
+    }
+    private final float[] mRotationMatrix=new float[16];
+    private final float[] mMVPMatrix = new float[16];
+    private final float[] mProjectionMatrix=new float[16];
+    private final float[] mViewMatrix=new float[16];
+    private float xMove=0.0f, yMove=0.0f;
+
+    public void setMovement(float x, float y){xMove=x;yMove=y;}
+    public void setColor(float[] color){_color=color;}
+    public float[] getmProjectionMatrix(){return mProjectionMatrix;}
+
+    float _x=0.0f;
+    float _y=0.0f;
+    public void setPosition(float x, float y){_x=x;_y=y;}
+
+    public float[] getmMVPMatrix()
+    {
+        float[] mModelMatrix=new float[16];
+        float[] mTempMatrix;
+        Matrix.setIdentityM(mModelMatrix, 0);
+
+
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        long time = SystemClock.uptimeMillis() % 4000;
+        float angle=0.090f*((int) time);
+        float distanceX = xMove * ((int) time);
+        float distanceY = yMove*((int) time);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+
+
+
+        Matrix.translateM(mModelMatrix, 0, distanceX, distanceY, 0f);
+        Matrix.translateM(mModelMatrix,0,_x,_y,0f);
+        Matrix.setRotateM(mRotationMatrix, 0, angle, 0, 0, -1.0f);
+
+        mTempMatrix=mModelMatrix.clone();
+        Matrix.multiplyMM(mModelMatrix,0, mTempMatrix,0,mRotationMatrix,0);
+
+        mTempMatrix=mMVPMatrix.clone();
+        Matrix.multiplyMM(mMVPMatrix, 0, mTempMatrix,0,mModelMatrix,0);
+        return mMVPMatrix;
     }
 }
