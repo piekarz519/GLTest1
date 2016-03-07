@@ -18,7 +18,7 @@ public class GLActivity extends AppCompatActivity {
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
+        // Komentarz sprawdzający możliwość Pushowania
         setContentView(mGLView);
     }
 }
